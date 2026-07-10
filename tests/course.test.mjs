@@ -12,7 +12,8 @@ assert.equal(course.chapters[1].lessons.length,16,'ГЛАВА 2: 16 уроков
 assert.equal(new Set(course.chapters.flatMap(c=>c.lessons.map(l=>l.id))).size,34,'ID уроков уникальны');
 assert.equal(Object.keys(context.window.LESSON_RULES).length,34,'У каждого урока есть проверенное правило');
 assert.equal(Object.keys(context.window.SENTENCE_BUILDS).length,34,'У каждого урока есть сборка предложения');
-assert.equal(context.window.KB_ALPHABET.length,37,'В алфавите 37 букв');
+assert.equal(context.window.KB_ALPHABET.length,35,'В алфавите 35 букв');
+assert.ok(!context.window.KB_ALPHABET.some(([letter])=>letter.startsWith('Ъ')||letter.startsWith('Ь')),'Ъ и Ь не считаются отдельными буквами в таблице курса');
 for(const chapter of course.chapters)for(const [index,lesson] of chapter.lessons.entries()){
   assert.equal(lesson.number,index+1,`Числовой порядок: ${lesson.id}`);
   assert.ok(lesson.title,'Есть название');
