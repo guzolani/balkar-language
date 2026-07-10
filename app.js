@@ -1,207 +1,56 @@
-const vocabulary = window.COURSE_WORDS || [
-  { balkar: 'Салам алейкум!', russian: 'Здравствуйте!', note: 'Приветствие мужчины по отношению к мужчине', category: 'greeting' },
-  { balkar: 'Кюн ашхы болсун!', russian: 'Добрый день!', note: 'Также используется как приветствие', category: 'greeting' },
-  { balkar: 'Эртден ашхы болсун!', russian: 'Доброе утро!', note: '', category: 'greeting' },
-  { balkar: 'Ингир ашхы болсун!', russian: 'Добрый вечер!', note: '', category: 'greeting' },
-  { balkar: 'Халыгъыз къалайды?', russian: 'Как вы себя чувствуете?', note: 'Вежливое обращение', category: 'greeting' },
-  { balkar: 'Сау къалыгъыз!', russian: 'До свидания!', note: 'Буквально: оставайтесь здоровы', category: 'farewell' },
-  { balkar: 'Эсен тюбешейик!', russian: 'До встречи!', note: '', category: 'farewell' },
-];
+const root = document.getElementById('content');
+const course = window.CHAPTER_COURSE;
+const STORAGE_KEY = 'balkar-chapter-progress-v1';
+const progress = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"completed":[],"attempts":{}}');
+const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const normalize = value => String(value).toLowerCase().replace(/[!?.,:;«»"'()\[\]—–-]/g,'').replace(/\s+/g,' ').trim();
 
-const state = JSON.parse(localStorage.getItem('balkar-progress') || '{"answers":0,"easy":0,"learned":[]}');
-let cardIndex = 0;
-let activeFilter = 'all';
-let activeModule = 0;
+function academicContext(lesson){const id=lesson.id;if(id==='1-1')return 'Тема относится к графике и фонетике. Графема — письменный знак, а фонема — минимальная звуковая единица, способная различать слова; одна буква не всегда равна одному звуку, а двойной знак может обозначать одну фонему.';if(id==='1-2')return 'Гармония гласных — фонологический и морфонологический механизм, который регулирует звуковой состав аффиксов. Грамматическое значение суффикса остаётся тем же, но его фонетический вариант меняется в зависимости от основы.';if(id==='1-3')return 'Число — словоизменительная категория имени существительного. Оно противопоставляет единичность и множественность, не создавая нового словарного значения существительного.';if(id==='1-4')return 'Личные окончания участвуют в предикации: они превращают имя или признак в сказуемое и связывают его с участником речи. Поэтому значение русского глагола «быть» в настоящем времени выражается не отдельным словом, а структурой сказуемого.';if(id==='1-5')return 'Вопросительные слова относятся к разным разрядам местоимений и наречий. Они замещают неизвестный компонент предложения, сохраняя его синтаксическую роль: лицо, предмет, место, направление, время или причину.';if(id==='1-6')return 'Отрицание — общая семантико-грамматическая категория, но его показатели распределены по разным частям речи и типам сказуемого. Отрицание наличия, именного признака и глагольного действия оформляется разными средствами.';if(id==='1-7')return 'Словообразование изучает создание новых лексем из производящей основы и аффикса. В отличие от словоизменения, словообразовательный суффикс меняет лексическое значение или частеречную принадлежность слова.';if(id==='1-8')return 'Глагол обладает категориями времени, лица, наклонения, залога и отрицания. Инфинитив является неличной формой: он называет действие, но сам по себе не указывает участника и время.';if(id==='1-9')return 'Причастие — неличная атрибутивная форма глагола. Оно сочетает глагольное значение действия с функцией определения имени и может выражать временное отношение к этому действию.';if(id==='1-10'||id==='2-2'||id==='2-3'||id==='2-4'||id==='2-5'||id==='2-6'||id==='2-7'||id==='2-8'||id==='2-9'||id==='2-10'||id==='2-11')return 'Эта тема относится к системе времени и вида глагола. Форма одновременно сообщает положение действия во времени и способ его представления: как факт, процесс, результат, привычное действие или определённое намерение.';if(id==='1-11')return 'Деепричастие — неличная обстоятельственная форма глагола. Оно обозначает добавочное действие и устанавливает временное или видовое отношение между ним и основным сказуемым.';if(id>='1-12'&&id<='1-18')return 'Падеж — словоизменительная категория имени и местоимения. Падежная форма кодирует синтаксическое и смысловое отношение слова к другим компонентам предложения: субъект, принадлежность, направление, объект, место или исходную точку.';if(id==='2-1')return 'Возвратное местоимение относится к системе местоименного склонения. Личный показатель внутри формы указывает участника, а последующее падежное окончание — его синтаксическое отношение в предложении.';if(id==='2-12'||id==='2-13'||id==='2-14')return 'Наклонение выражает отношение действия к действительности и воле говорящего. Оно показывает, представлено ли действие как желание, приказ, просьба, условие или возможная ситуация.';return 'Залог — глагольная категория, описывающая распределение смысловых ролей между деятелем, объектом и инициатором действия. Изменение залога перестраивает взгляд на одно и то же событие.';}
+function explanationSection(lesson){const rule=window.LESSON_RULES?.[lesson.id];if(!rule)return `<section class="notice"><h2>Понятное объяснение</h2><p>Для этого урока объяснение пока не подготовлено.</p></section>`;const model=rule.steps.map(([,form])=>form).join(' · ');return `<section class="explanation"><span class="eyebrow">ОБЪЯСНЕНИЕ ПО АНА ТИЛ</span><h2>Сначала — простыми словами</h2>${rule.intro.map(text=>`<p class="explanation-lead">${esc(text)}</p>`).join('')}<div class="academic-note"><h3>Академическое пояснение</h3><p>${esc(academicContext(lesson))}</p><p>${esc(rule.use)}</p><dl><div><dt>Функция в речи</dt><dd>${esc(rule.intro[0])}</dd></div><div><dt>Формальная модель</dt><dd>${esc(model)}</dd></div><div><dt>Ограничение и отличие</dt><dd>${esc(rule.tip)}</dd></div></dl></div><div class="rule-card"><h3>Как это работает</h3><ol>${rule.steps.map(([point,form,meaning])=>`<li><span>${esc(point)}</span><small><b>Балкарский пример:</b> ${esc(form)} <i>→</i> ${esc(meaning)}</small></li>`).join('')}</ol></div><div class="remember"><strong>Главная мысль</strong><p>${esc(rule.tip)}</p></div></section>`;}
+function alphabetTable(lesson){if(lesson.id!=='1-1')return '';return `<div class="alphabet-panel"><h3>Алфавит: написание и название букв</h3><p>Название помогает прочитать букву вслух. Это знакомство со знаками, а не точная тренировка произношения.</p><div class="alphabet-grid">${window.KB_ALPHABET.map(([letter,name])=>`<div><b>${esc(letter)}</b><span>${esc(name)}</span></div>`).join('')}</div><div class="sound-notes"><p><b>Гъ, Къ, Нг, Дж</b> — двойные знаки, каждый обозначает один согласный звук.</p><p><b>Ъ и Ь</b> сами отдельного звука не обозначают.</p><p><b>Ў</b> — обозначение краткого неслогового звука буквы У, а не отдельная 38-я буква. В печатных источниках его отображение может отличаться.</p></div></div>`;}
+function materialSection(lesson){const rule=window.LESSON_RULES?.[lesson.id];if(!rule)return '';return `<section class="detailed-material"><span class="eyebrow">ПОДРОБНЫЙ МАТЕРИАЛ</span><h2>Разберём тему без спешки</h2><p>${esc(rule.use)}</p>${alphabetTable(lesson)}<div class="material-flow">${rule.steps.map(([point,form,meaning],i)=>`<article><span>${i+1}</span><div><h3>${esc(point)}</h3><p class="balkar-example"><b>${esc(form)}</b><i>→</i>${esc(meaning)}</p></div></article>`).join('')}</div><div class="example-card"><h3>Примеры по этому правилу</h3><div class="example-table">${rule.examples.map(([form,meaning])=>`<div><strong>${esc(form)}</strong><span>${esc(meaning)}</span></div>`).join('')}</div></div><div class="material-check"><h3>Проверьте понимание</h3><p>${esc(rule.tip)}</p></div><p class="note-source">Правило и формы сверены со сборником «АНА ТИЛ», современной академической грамматикой и ${esc(lesson.source)}.</p></section>`;}
+function objectiveText(lesson){return lesson.id==='1-1'?'Познакомиться с карачаево-балкарским языком, увидеть все 37 букв, научиться узнавать их написание и названия. Произношение особых звуков будет закрепляться отдельно.':`Понять тему «${lesson.title}», увидеть связь правила с примерами и научиться применять модель самостоятельно.`;}
+function route() { return location.hash.slice(1).split('/').filter(Boolean); }
+function completedCount(chapter){return chapter.lessons.filter(l=>progress.completed.includes(l.id)).length;}
+function progressBar(done,total){const pct=total?Math.round(done/total*100):0;return `<div class="progress-track" aria-label="Пройдено ${pct}%"><i style="width:${pct}%"></i></div>`;}
 
-function saveState() { localStorage.setItem('balkar-progress', JSON.stringify(state)); updateStats(); }
-
-function setBackupStatus(message) {
-  const label = document.getElementById('backupStatus');
-  if (label) label.textContent = message;
+function home(){
+  const total=course.chapters.reduce((n,c)=>n+c.lessons.length,0),done=progress.completed.length;
+  root.innerHTML=`<section class="hero"><div><span class="eyebrow">КУРС КАРАЧАЕВО-БАЛКАРСКОГО ЯЗЫКА</span><h1>Учитесь последовательно,<br>от звука к сложной форме</h1><p>34 урока из двух учебных глав: объяснения, исходные примеры, упражнения и сохранение прогресса.</p><a class="primary" href="#/chapters">Выбрать главу →</a></div><div class="mountains" aria-hidden="true">△ △</div></section><section class="summary"><div><strong>${done}</strong><span>уроков пройдено</span></div><div><strong>${total}</strong><span>уроков в курсе</span></div><div><strong>${Math.round(done/total*100)}%</strong><span>общий прогресс</span></div></section><section><div class="section-title"><div><span class="eyebrow">ПРОГРАММА</span><h2>Две связанные главы</h2></div></div><div class="chapter-grid">${course.chapters.map(chapterCard).join('')}</div></section>`;
 }
-
-function navigate(target) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`${target}View`).classList.add('active');
-  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.toggle('active', b.dataset.go === target));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (target === 'dictionary') renderDictionary();
-  if (target === 'progress') updateStats();
-  if (target === 'grammar') renderGrammar();
-}
-
-document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
-
-function renderWeek() {
-  const labels = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
-  const today = (new Date().getDay() + 6) % 7;
-  document.getElementById('weekProgress').innerHTML = labels.map((label, i) => `<div class="day ${i < today ? 'done' : ''} ${i === today ? 'done today' : ''}"><i>${i <= today ? '✓' : i + 1}</i>${label}</div>`).join('');
-}
-
-function renderCard() {
-  const item = vocabulary[cardIndex];
-  document.getElementById('cardRussian').textContent = item.russian;
-  document.getElementById('cardBalkar').textContent = item.balkar;
-  document.getElementById('cardNote').textContent = item.note || 'Фраза из тематического разговорника';
-  document.getElementById('lessonStepLabel').textContent = `${cardIndex + 1} из ${vocabulary.length}`;
-  document.getElementById('lessonProgressBar').style.width = `${((cardIndex + 1) / vocabulary.length) * 100}%`;
-  document.getElementById('cardAnswer').classList.add('hidden');
-  document.getElementById('ratingButtons').classList.add('hidden');
-  document.getElementById('revealButton').classList.remove('hidden');
-  document.getElementById('typedAnswer').value = '';
-  document.getElementById('typedFeedback').classList.add('hidden');
-  document.getElementById('typingPractice').classList.remove('hidden');
-}
-
-document.getElementById('revealButton').addEventListener('click', () => {
-  document.getElementById('cardAnswer').classList.remove('hidden');
-  document.getElementById('ratingButtons').classList.remove('hidden');
-  document.getElementById('revealButton').classList.add('hidden');
-  document.getElementById('typingPractice').classList.add('hidden');
-});
-
-function normalizeAnswer(value) { return value.toLowerCase().replace(/[!?.,—–-]/g, '').replace(/\s+/g, ' ').trim(); }
-document.getElementById('checkTyped').addEventListener('click', () => {
-  const input = document.getElementById('typedAnswer').value;
-  const expected = vocabulary[cardIndex].balkar;
-  const feedback = document.getElementById('typedFeedback');
-  feedback.classList.remove('hidden', 'correct', 'wrong');
-  if (!input.trim()) { feedback.classList.add('wrong'); feedback.textContent = 'Сначала напишите свой вариант.'; return; }
-  if (normalizeAnswer(input) === normalizeAnswer(expected)) { feedback.classList.add('correct'); feedback.textContent = 'Верно! Написание совпадает.'; }
-  else { feedback.classList.add('wrong'); feedback.innerHTML = `Пока не совпало. Правильный вариант: <b>${expected}</b>`; }
-  document.getElementById('cardAnswer').classList.remove('hidden');
-  document.getElementById('ratingButtons').classList.remove('hidden');
-  document.getElementById('revealButton').classList.add('hidden');
-});
-
-document.querySelectorAll('[data-rating]').forEach(button => button.addEventListener('click', () => {
-  state.answers += 1;
-  if (button.dataset.rating === 'easy') {
-    state.easy += 1;
-    if (!state.learned.includes(cardIndex)) state.learned.push(cardIndex);
+function chapterCard(c){const done=completedCount(c);return `<article class="chapter-card"><span>ГЛАВА ${c.id}</span><h3>${esc(c.subtitle)}</h3><p>${c.lessons.length} уроков${c.prerequisite?` · ${esc(c.prerequisite)}`:''}</p>${progressBar(done,c.lessons.length)}<small>${done} из ${c.lessons.length}</small><a href="#/chapter/${c.id}">Открыть содержание →</a></article>`;}
+function chapters(){root.innerHTML=`<header class="page-head"><span class="eyebrow">СОДЕРЖАНИЕ КУРСА</span><h1>Выберите главу</h1><p>ГЛАВА 2 развивает глагольную систему и предполагает знакомство с основами первой главы, но остаётся доступной сразу.</p></header><div class="chapter-grid">${course.chapters.map(chapterCard).join('')}</div>`;}
+function chapterPage(id){const c=course.chapters.find(x=>x.id===id);if(!c)return notFound();const done=completedCount(c);root.innerHTML=`<header class="page-head"><a class="back" href="#/chapters">← Все главы</a><span class="eyebrow">ГЛАВА ${c.id}</span><h1>${esc(c.subtitle)}</h1><p>${c.prerequisite?esc(c.prerequisite):'Начальная глава курса.'}</p>${progressBar(done,c.lessons.length)}<small>${done} из ${c.lessons.length} уроков завершено</small></header><ol class="lesson-list">${c.lessons.map((l,i)=>`<li class="${progress.completed.includes(l.id)?'done':''}"><a href="#/chapter/${c.id}/lesson/${i+1}"><span>${progress.completed.includes(l.id)?'✓':i+1}</span><div><small>Урок ${i+1}</small><strong>${esc(l.title)}</strong></div><b>→</b></a></li>`).join('')}</ol><section class="review-callout"><div><span class="eyebrow">ПОВТОРЕНИЕ</span><h2>Проверьте материал главы</h2><p>Пять заданий из разных уроков с разбором каждого ответа.</p></div><a class="primary" href="#/chapter/${c.id}/review">Начать повторение →</a></section>`;}
+function lessonPage(chapterId,number){const c=course.chapters.find(x=>x.id===chapterId),index=Number(number)-1,l=c?.lessons[index];if(!l)return notFound();const isDone=progress.completed.includes(l.id);root.innerHTML=`<div class="lesson-layout"><aside><a class="back" href="#/chapter/${c.id}">← Содержание</a><span>ГЛАВА ${c.id}</span><strong>${index+1}. ${esc(l.title)}</strong>${progressBar(index+1,c.lessons.length)}<small>Урок ${index+1} из ${c.lessons.length}</small></aside><article class="lesson"><header><span class="eyebrow">УРОК ${index+1}</span><h1>${esc(l.title)}</h1><p class="source">Источники: сборник «АНА ТИЛ» и ${esc(l.source)} · исходное написание примеров сохранено</p></header><section class="objectives"><h2>Цель урока</h2><p>${esc(objectiveText(l))}</p></section>${explanationSection(l)}${materialSection(l)}${sentenceBuilderSection(l)}${gameSection(l)}<section class="complete-box"><label><input type="checkbox" id="completeLesson" ${isDone?'checked':''}> <span>Отметить урок пройденным</span></label></section><nav class="lesson-nav">${index>0?`<a href="#/chapter/${c.id}/lesson/${index}">← Предыдущий</a>`:'<span></span>'}${index<c.lessons.length-1?`<a href="#/chapter/${c.id}/lesson/${index+2}">Следующий →</a>`:`<a href="#/chapter/${c.id}">К содержанию →</a>`}</nav></article></div>`;bindLesson(l);}
+function gameRounds(lesson){const examples=window.LESSON_RULES[lesson.id].examples;const makeOptions=(index,direction)=>{const field=direction==='form'?0:1;return [examples[index][field],examples[(index+1)%examples.length][field],examples[(index+2)%examples.length][field]];};const rounds=examples.slice(0,5).map((example,i)=>{const reverse=i%2===1;return {type:'choice',prompt:reverse?`Как будет по-балкарски: ${example[1]}?`:`Что означает «${example[0]}»?`,answer:reverse?example[0]:example[1],options:makeOptions(i,reverse?'form':'meaning')};});rounds.push(lesson.exercise?{type:'input',prompt:`Напишите по-балкарски: ${lesson.exercise.prompt}`,answer:lesson.exercise.answer}:{type:'choice',prompt:`Как будет по-балкарски: ${examples[5][1]}?`,answer:examples[5][0],options:makeOptions(5,'form')});const [sentence,translation]=window.SENTENCE_BUILDS[lesson.id];rounds.push({type:'arrange',prompt:`Соберите предложение: ${translation}`,answer:sentence,tokens:sentence.split(' ')});return rounds;}
+function gameSection(lesson){return `<section class="practice-game" id="practiceGame"><div class="game-heading"><div><span class="eyebrow">ИГРОВАЯ ПРАКТИКА</span><h2>Семь заданий</h2></div><div class="game-stats"><strong id="gameScore">0 очков</strong><strong id="gameStreak">🔥 0 подряд</strong></div></div><div class="round-dots" id="roundDots" aria-label="Прогресс игры"></div><div id="gameStage"></div></section>`;}
+function sentenceBuilderSection(lesson){const [sentence,translation]=window.SENTENCE_BUILDS[lesson.id];return `<section class="sentence-lab" id="sentenceLab"><div class="sentence-lab-heading"><div><span class="eyebrow">КАК В DUOLINGO</span><h2>Соберите предложение</h2></div><span class="sentence-badge">Порядок слов</span></div><p class="sentence-prompt">${esc(translation)}</p><p class="builder-help">Нажимайте на слова снизу в правильном порядке. Чтобы переставить слово, нажмите на него в собранной строке — оно вернётся вниз.</p><div class="sentence-builder"><div class="sentence-answer" aria-label="Собранное предложение"></div><div class="word-bank" aria-label="Доступные слова"></div><div class="builder-actions"><button type="button" class="check-sentence">Проверить порядок</button><button type="button" class="reset-sentence secondary">Перемешать заново</button></div><p class="game-feedback" role="status" aria-live="polite"></p></div><p class="sentence-model" hidden>Правильная модель: <strong>${esc(sentence)}</strong></p></section>`;}
+function mixedTokenOrder(tokens,shift=0){const ids=tokens.map((_,i)=>i);if(ids.length<2)return ids;const by=1+(shift%(ids.length-1));return ids.slice(by).concat(ids.slice(0,by));}
+function bindSentenceLab(lesson){const lab=document.getElementById('sentenceLab');if(!lab)return;const [sentence]=window.SENTENCE_BUILDS[lesson.id],tokens=sentence.split(' '),answerBox=lab.querySelector('.sentence-answer'),bank=lab.querySelector('.word-bank'),feedback=lab.querySelector('.game-feedback');let chosen=[],mix=Number(lesson.number)||0,bankOrder=mixedTokenOrder(tokens,mix);const draw=()=>{answerBox.innerHTML=chosen.length?chosen.map((id,place)=>`<button type="button" class="chosen-word" data-token="${id}" aria-label="Вернуть слово ${esc(tokens[id])}"><small>${place+1}</small>${esc(tokens[id])}</button>`).join(''):'<span>Нажмите первое слово</span>';bank.innerHTML=bankOrder.filter(id=>!chosen.includes(id)).map(id=>`<button type="button" class="bank-word" data-token="${id}">${esc(tokens[id])}</button>`).join('');bank.querySelectorAll('.bank-word').forEach(button=>button.addEventListener('click',()=>{chosen.push(Number(button.dataset.token));feedback.textContent='';feedback.className='game-feedback';draw();}));answerBox.querySelectorAll('.chosen-word').forEach(button=>button.addEventListener('click',()=>{chosen=chosen.filter(id=>id!==Number(button.dataset.token));feedback.textContent='';feedback.className='game-feedback';draw();}));};draw();lab.querySelector('.reset-sentence').addEventListener('click',()=>{chosen=[];mix++;bankOrder=mixedTokenOrder(tokens,mix);feedback.textContent='Слова перемешаны. Соберите предложение ещё раз.';feedback.className='game-feedback';lab.querySelector('.sentence-model').hidden=true;draw();});lab.querySelector('.check-sentence').addEventListener('click',()=>{if(chosen.length!==tokens.length){feedback.textContent='Сначала используйте все слова.';feedback.className='game-feedback wrong';return;}progress.attempts[lesson.id]=(progress.attempts[lesson.id]||0)+1;save();if(normalize(chosen.map(id=>tokens[id]).join(' '))===normalize(sentence)){feedback.textContent='Верно! Предложение собрано в правильном порядке.';feedback.className='game-feedback correct';lab.querySelector('.sentence-model').hidden=false;}else{feedback.textContent='Порядок пока неверный. Нажмите на слово сверху, верните его вниз и попробуйте снова.';feedback.className='game-feedback wrong';}});}
+function bindLesson(l){document.getElementById('completeLesson').addEventListener('change',e=>{progress.completed=progress.completed.filter(id=>id!==l.id);if(e.target.checked)progress.completed.push(l.id);save();});bindSentenceLab(l);bindGame(l);}
+function bindGame(lesson){
+  const rounds=gameRounds(lesson),stage=document.getElementById('gameStage'),dots=document.getElementById('roundDots'),scoreEl=document.getElementById('gameScore'),streakEl=document.getElementById('gameStreak');
+  let index=0,score=0,streak=0;
+  const rotate=(items,n)=>items.slice(n%items.length).concat(items.slice(0,n%items.length));
+  const scoreLabel=()=>`${score} ${score===1?'очко':score>=2&&score<=4?'очка':'очков'}`;
+  function paint(){
+    dots.innerHTML=rounds.map((_,i)=>`<i class="${i<index?'done':i===index?'active':''}">${i+1}</i>`).join('');
+    scoreEl.textContent=scoreLabel();streakEl.textContent=`🔥 ${streak} подряд`;
+    if(index>=rounds.length){stage.innerHTML=`<div class="game-finish"><span aria-hidden="true">${score===rounds.length?'🏔️':'⭐'}</span><h3>${score===rounds.length?'Без ошибок!':'Тренировка завершена'}</h3><p>Ваш результат: <strong>${score} из ${rounds.length}</strong>.</p><p>Ошибки можно исправить новым прохождением.</p><button id="restartGame">Сыграть ещё раз</button></div>`;document.getElementById('restartGame').addEventListener('click',()=>{index=0;score=0;streak=0;paint();});return;}
+    const r=rounds[index];
+    const controls=r.type==='choice'?`<div class="game-options">${rotate(r.options,index+Number(lesson.number)).map(option=>`<button type="button" class="game-option" data-value="${esc(option)}">${esc(option)}</button>`).join('')}</div>`:r.type==='arrange'?`<div class="sentence-builder"><p class="builder-help">Нажимайте слова в нужном порядке. Нажмите выбранное слово, чтобы вернуть его обратно.</p><div class="sentence-answer" aria-label="Собранное предложение"></div><div class="word-bank" aria-label="Доступные слова"></div><div class="builder-actions"><button type="button" class="check-sentence">Проверить порядок</button><button type="button" class="reset-sentence secondary">Сбросить</button></div></div>`:`<div class="game-input"><label for="gameAnswer">Ваш ответ</label><input id="gameAnswer" autocomplete="off" spellcheck="false"><button type="button" id="submitGameAnswer">Ответить</button></div>`;
+    stage.innerHTML=`<article class="game-round"><small>Задание ${index+1} из ${rounds.length}</small><h3>${esc(r.prompt)}</h3>${controls}<p class="game-feedback" role="status" aria-live="polite"></p><button type="button" class="next-round" hidden>${index===rounds.length-1?'Узнать результат':'Следующее задание →'}</button></article>`;
+    const answer=value=>{const feedback=stage.querySelector('.game-feedback'),ok=normalize(value)===normalize(r.answer);progress.attempts[lesson.id]=(progress.attempts[lesson.id]||0)+1;save();if(ok){score++;streak++;feedback.className='game-feedback correct';feedback.textContent=`Верно! Серия: ${streak}`;}else{streak=0;feedback.className='game-feedback wrong';feedback.innerHTML=`Пока нет. Правильный ответ: <strong>${esc(r.answer)}</strong>`;}scoreEl.textContent=scoreLabel();streakEl.textContent=`🔥 ${streak} подряд`;stage.querySelectorAll('button:not(.next-round),input').forEach(el=>el.disabled=true);const next=stage.querySelector('.next-round');next.hidden=false;next.focus();};
+    stage.querySelectorAll('.game-option').forEach(button=>button.addEventListener('click',()=>answer(button.dataset.value)));
+    const submit=document.getElementById('submitGameAnswer'),input=document.getElementById('gameAnswer');if(submit){submit.addEventListener('click',()=>{if(!input.value.trim()){stage.querySelector('.game-feedback').textContent='Сначала введите ответ.';input.focus();return;}answer(input.value);});input.addEventListener('keydown',e=>{if(e.key==='Enter')submit.click();});}
+    if(r.type==='arrange'){const bankOrder=mixedTokenOrder(r.tokens,index+1);let chosen=[];const answerBox=stage.querySelector('.sentence-answer'),bank=stage.querySelector('.word-bank'),feedback=stage.querySelector('.game-feedback');const draw=()=>{answerBox.innerHTML=chosen.length?chosen.map((id,place)=>`<button type="button" class="chosen-word" data-token="${id}" aria-label="Вернуть слово ${esc(r.tokens[id])}"><small>${place+1}</small>${esc(r.tokens[id])}</button>`).join(''):'<span>Предложение появится здесь</span>';bank.innerHTML=bankOrder.filter(id=>!chosen.includes(id)).map(id=>`<button type="button" class="bank-word" data-token="${id}">${esc(r.tokens[id])}</button>`).join('');bank.querySelectorAll('.bank-word').forEach(button=>button.addEventListener('click',()=>{chosen.push(Number(button.dataset.token));feedback.textContent='';draw();}));answerBox.querySelectorAll('.chosen-word').forEach(button=>button.addEventListener('click',()=>{chosen=chosen.filter(id=>id!==Number(button.dataset.token));feedback.textContent='';draw();}));};draw();stage.querySelector('.reset-sentence').addEventListener('click',()=>{chosen=[];feedback.textContent='';draw();});stage.querySelector('.check-sentence').addEventListener('click',()=>{if(chosen.length!==r.tokens.length){feedback.textContent='Используйте все слова перед проверкой.';return;}answer(chosen.map(id=>r.tokens[id]).join(' '));});}
+    stage.querySelector('.next-round').addEventListener('click',()=>{index++;paint();});
   }
-  saveState();
-  cardIndex = (cardIndex + 1) % vocabulary.length;
-  renderCard();
-}));
-
-function renderDictionary() {
-  const query = document.getElementById('dictionarySearch').value.trim().toLowerCase();
-  const results = vocabulary.filter(item => (activeFilter === 'all' || item.category === activeFilter || item.topic === activeFilter) && `${item.balkar} ${item.russian}`.toLowerCase().includes(query));
-  document.getElementById('dictionaryList').innerHTML = results.length ? results.map(item => `
-    <article class="dictionary-item"><div><h3>${item.balkar}</h3><p>${item.russian}</p><small>${item.topic || (item.category === 'greeting' ? 'Приветствия' : 'Прощание')}</small></div></article>
-  `).join('') : '<div class="empty">Ничего не найдено</div>';
+  paint();
 }
-
-const guidance = {
-  alphabet:['Прочитайте слово целиком и найдите особое сочетание.','Не разделяйте къ, гъ и нг на самостоятельные звуки при анализе.','Для балкарского варианта в начале слова пишем ж: жол, жаз.'],
-  harmony:['Определите последнюю гласную основы.','Отнесите её к твёрдому или мягкому ряду.','Выберите вариант окончания с гласной того же ряда.'],
-  plural:['Твёрдая основа получает -ла: адамла, арбазла.','Мягкая основа получает -ле: терекле, эгечле.','После числа: юч адам, а не юч адамла.'],
-  'who-what':['В карачаево-балкарском языке грамматического рода нет: ол может означать «он» и «она».','Личное окончание присоединяется к имени и показывает, о ком идёт речь.','Сначала найдите подлежащее, затем поставьте именную часть сказуемого в конец.'],
-  'at-home':['Местное значение передаётся окончанием -да/-де.','Форма окончания зависит от последней гласной основы.','Личное окончание ставится после показателя места.'],
-  'speak':['Нейтральный порядок: подлежащее + дополнение + глагол.','Отсутствующий субъект часто понятен из личного окончания.','При перестановке слов меняется акцент, поэтому начинаем с нейтральной схемы.'],
-  questions:['Ким — кто, не — что, къайда — где, къайры — куда, къайдан — откуда.','Вопросительное слово занимает позицию неизвестной части ответа.','Для вопроса без вопросительного слова используются -мы/-ми/-му/-мю.'],
-  negative:['Бар означает наличие, жокъ — отсутствие.','Огъай выражает несогласие «нет».','В глаголе отрицание -ма/-ме стоит перед показателем времени.'],
-  family:['Сначала образуется основа, затем множественное число, потом принадлежность.','-ла/-ле выбирается по гармонии гласных.','Принадлежность можно уточнить формой мени, сени и личным окончанием.'],
-  direction:['Къайры? требует формы направления -гъа/-ге/-къа/-ке.','Къайда? требует местной формы -да/-де.','Къайдан? требует исходной формы -дан/-ден.'],
-  tenses:['Прошедшее завершённое действие использует формы типа -ды/-ди.','Будущее намерение выражается формами -рыкъ/-рик и вариантами по гармонии.','Слова времени помогают выбрать форму и обычно стоят ближе к началу.']
-};
-function shuffled(items) { return items.map(value => ({value, sort:Math.random()})).sort((a,b)=>a.sort-b.sort).map(x=>x.value); }
-function explainBuild(actual, expected) {
-  if (!actual.length) return 'Вы ещё не добавили ни одного слова.';
-  if (actual.length < expected.length) return `Не хватает слов: выбрано ${actual.length} из ${expected.length}.`;
-  if (actual.length > expected.length) return 'В ответе есть лишние слова.';
-  const wrong = actual.findIndex((word,i)=>normalizeAnswer(word)!==normalizeAnswer(expected[i]));
-  if (wrong >= 0) return `Проверьте позицию ${wrong+1}: здесь ожидается «${expected[wrong]}». В нейтральном предложении сказуемое обычно находится в конце.`;
-  return '';
-}
-function renderGrammar() {
-  const modules = window.GRAMMAR_MODULES || [];
-  document.getElementById('moduleTabs').innerHTML = modules.map((module, i) => `<button class="module-tab ${i === activeModule ? 'active' : ''}" data-module="${i}"><span>${i + 1}</span>${module.title}</button>`).join('');
-  document.querySelectorAll('[data-module]').forEach(button => button.addEventListener('click', () => { activeModule = Number(button.dataset.module); renderGrammar(); }));
-  const m = modules[activeModule]; if (!m) return;
-  const tips = guidance[m.id] || [m.rule];
-  const tasks = m.examples.map((example,i)=>({id:i,target:example[0],prompt:example[1],words:example[0].split(' ')}));
-  document.getElementById('grammarLesson').innerHTML = `<div class="grammar-head"><span>МОДУЛЬ ${activeModule + 1} · ПО МЕТОДИКЕ «АНА ТИЛ»</span><h2>${m.title}</h2><p>${m.subtitle}</p></div><section class="rule-box"><strong>Основной принцип</strong><p>${m.rule}</p><ol>${tips.map(t=>`<li>${t}</li>`).join('')}</ol></section><section><h3>Разберите примеры</h3><div class="example-list">${m.examples.map((e,i) => `<div><i>${i+1}</i><b>${e[0]}</b><span>${e[1]}</span></div>`).join('')}</div></section><section><h3>Практика: соберите предложения</h3><p class="section-help">Нажимайте слова в нужном порядке. Слово в области ответа можно нажать, чтобы вернуть назад.</p>${tasks.map(task=>`<div class="builder" data-builder="${task.id}"><p>Переведите: <b>${task.prompt}</b></p><div class="answer-zone" data-answer="${task.id}"><span>Ваш ответ</span></div><div class="word-bank" data-bank="${task.id}">${shuffled(task.words).map((w,j)=>`<button draggable="true" data-word="${w}" data-token="${task.id}-${j}">${w}</button>`).join('')}</div><button class="primary-button check-builder" data-check="${task.id}">Проверить</button><button class="reset-builder" data-reset="${task.id}">Сбросить</button><p class="feedback hidden" data-feedback="${task.id}"></p></div>`).join('')}</section><section><h3>Перевод в обратную сторону</h3>${m.examples.map((e,i)=>`<label class="translation-task"><span>${e[0]}</span><input data-translation="${i}" placeholder="Переведите на русский"><button data-check-translation="${i}">Проверить</button><small class="hidden"></small></label>`).join('')}</section><section><h3>Короткий диалог</h3><div class="dialogue">${m.dialogue.map((d,i)=>`<div class="${i%2?'reply':''}"><b>${d[0]}</b><span>${d[1]}</span></div>`).join('')}</div></section>`;
-  document.querySelectorAll('.word-bank button').forEach(button=>{button.addEventListener('click',()=>document.querySelector(`[data-answer="${button.dataset.token.split('-')[0]}"]`).append(button));button.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',button.dataset.token));});
-  document.querySelectorAll('.answer-zone').forEach(zone=>{zone.addEventListener('dragover',e=>e.preventDefault());zone.addEventListener('drop',e=>{e.preventDefault();const b=document.querySelector(`[data-token="${e.dataTransfer.getData('text/plain')}"]`);if(b)zone.append(b);});zone.addEventListener('click',e=>{if(e.target.tagName==='BUTTON')document.querySelector(`[data-bank="${zone.dataset.answer}"]`).append(e.target);});});
-  document.querySelectorAll('[data-reset]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.reset,bank=document.querySelector(`[data-bank="${id}"]`),zone=document.querySelector(`[data-answer="${id}"]`);zone.querySelectorAll('button').forEach(b=>bank.append(b));document.querySelector(`[data-feedback="${id}"]`).classList.add('hidden');}));
-  document.querySelectorAll('[data-check]').forEach(button=>button.addEventListener('click',()=>{const task=tasks[Number(button.dataset.check)],actual=[...document.querySelector(`[data-answer="${task.id}"]`).querySelectorAll('button')].map(b=>b.dataset.word),expected=task.words,feedback=document.querySelector(`[data-feedback="${task.id}"]`),error=explainBuild(actual,expected);feedback.classList.remove('hidden','correct','wrong');feedback.classList.add(error?'wrong':'correct');feedback.innerHTML=error?`${error}<br>Эталон: <b>${task.target}</b>`:'Верно! Порядок слов правильный.';}));
-  document.querySelectorAll('[data-check-translation]').forEach(button=>button.addEventListener('click',()=>{const i=Number(button.dataset.checkTranslation),label=button.closest('label'),input=label.querySelector('input'),note=label.querySelector('small'),expected=m.examples[i][1];note.classList.remove('hidden','correct','wrong');const ok=normalizeAnswer(input.value)===normalizeAnswer(expected);note.classList.add(ok?'correct':'wrong');note.innerHTML=ok?'Верно.':`Ожидаемый перевод: <b>${expected}</b>`;}));
-}
-
-document.getElementById('dictionarySearch').addEventListener('input', renderDictionary);
-document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
-  activeFilter = button.dataset.filter;
-  document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === button));
-  renderDictionary();
-}));
-
-document.getElementById('themeButton').addEventListener('click', () => document.body.classList.toggle('dark'));
-
-document.getElementById('exportProgress').addEventListener('click', () => {
-  const backup = { app: 'balkar', version: 1, exportedAt: new Date().toISOString(), progress: state };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `balkar-progress-${new Date().toISOString().slice(0, 10)}.json`;
-  link.click();
-  URL.revokeObjectURL(link.href);
-  setBackupStatus('Резервная копия создана');
-});
-
-document.getElementById('importProgress').addEventListener('change', async event => {
-  const file = event.target.files[0];
-  if (!file) return;
-  try {
-    const backup = JSON.parse(await file.text());
-    if (backup.app !== 'balkar' || !backup.progress) throw new Error('Неверный формат');
-    Object.assign(state, backup.progress);
-    saveState();
-    setBackupStatus('Прогресс успешно восстановлен');
-  } catch {
-    setBackupStatus('Не удалось прочитать резервную копию');
-  }
-  event.target.value = '';
-});
-
-let deferredInstallPrompt;
-const installBanner = document.getElementById('installBanner');
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-const dismissedInstall = localStorage.getItem('balkar-install-dismissed');
-if (!isStandalone && !dismissedInstall) installBanner.classList.remove('hidden');
-
-window.addEventListener('beforeinstallprompt', event => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  document.getElementById('installButton').classList.remove('hidden');
-  document.getElementById('installHint').textContent = 'Установите сайт как приложение — он сможет работать даже без интернета.';
-});
-
-document.getElementById('installButton').addEventListener('click', async () => {
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = undefined;
-  installBanner.classList.add('hidden');
-});
-
-document.getElementById('installClose').addEventListener('click', () => {
-  installBanner.classList.add('hidden');
-  localStorage.setItem('balkar-install-dismissed', '1');
-});
-
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
-
-function updateStats() {
-  document.getElementById('learnedStat').textContent = state.learned.length;
-  document.getElementById('reviewStat').textContent = state.answers;
-  document.getElementById('accuracyStat').textContent = state.answers ? `${Math.round(state.easy / state.answers * 100)}%` : '—';
-  const progress = state.learned.length / vocabulary.length * 100;
-  document.getElementById('roadmapFill').style.width = `${progress}%`;
-  document.getElementById('roadmapText').textContent = state.learned.length ? `Вы уверенно знаете ${state.learned.length} из ${vocabulary.length} слов первого урока.` : 'Начните первый урок, чтобы увидеть прогресс.';
-}
-
-renderWeek(); renderCard(); renderDictionary(); renderGrammar(); updateStats();
+function reviewPage(id){const c=course.chapters.find(x=>x.id===id);if(!c)return notFound();const available=c.lessons.filter(l=>l.exercise),step=Math.max(1,Math.floor(available.length/5)),items=available.filter((_,i)=>i%step===0).slice(0,5);root.innerHTML=`<header class="page-head"><a class="back" href="#/chapter/${c.id}">← К главе</a><span class="eyebrow">ПОВТОРЕНИЕ · ГЛАВА ${c.id}</span><h1>Пять контрольных форм</h1><p>Все ответы взяты из материала главы. После проверки вы увидите точную форму источника.</p></header><form id="reviewForm" class="review-form">${items.map((l,i)=>`<fieldset><legend>${i+1}. ${esc(l.exercise.prompt)}</legend><input name="answer-${i}" aria-label="Ответ на задание ${i+1}" autocomplete="off" spellcheck="false"><p role="status" aria-live="polite"></p></fieldset>`).join('')}<div class="exercise-actions"><button type="submit">Проверить всё</button><button type="reset" class="secondary">Повторить</button></div><p id="reviewScore" role="status" aria-live="polite"></p></form>`;const form=document.getElementById('reviewForm');form.addEventListener('submit',e=>{e.preventDefault();let score=0;items.forEach((l,i)=>{const input=form.elements[`answer-${i}`],feedback=input.nextElementSibling,expected=l.exercise.answer;if(!input.value.trim()){feedback.className='wrong';feedback.textContent='Нет ответа. В источнике: '+expected;}else if(normalize(input.value)===normalize(expected)){score++;feedback.className='correct';feedback.textContent='Верно.';}else{feedback.className='wrong';feedback.textContent='Нужно исправить. В источнике: '+expected;}});document.getElementById('reviewScore').textContent=`Результат: ${score} из ${items.length}.`;});form.addEventListener('reset',()=>setTimeout(()=>{form.querySelectorAll('[role=status]').forEach(x=>{x.textContent='';x.className='';});form.querySelector('input')?.focus();}));}
+function progressPage(){const total=course.chapters.reduce((n,c)=>n+c.lessons.length,0);root.innerHTML=`<header class="page-head"><span class="eyebrow">ВАШ ПРОГРЕСС</span><h1>${progress.completed.length} из ${total} уроков</h1>${progressBar(progress.completed.length,total)}<p>Прогресс хранится на этом устройстве и восстанавливается после перезагрузки.</p></header><div class="chapter-grid">${course.chapters.map(chapterCard).join('')}</div><button class="danger" id="resetProgress">Сбросить весь прогресс</button>`;document.getElementById('resetProgress').addEventListener('click',()=>{if(confirm('Сбросить отметки о прохождении?')){progress.completed=[];progress.attempts={};save();progressPage();}});}
+function notFound(){root.innerHTML=`<section class="not-found"><span>404</span><h1>Такой страницы нет</h1><p>Проверьте адрес или вернитесь к содержанию курса.</p><a class="primary" href="#/chapters">К главам</a></section>`;}
+function render(){try{if(!course?.chapters?.length)throw new Error('Нет учебных данных');const r=route();if(!r.length)return home();if(r[0]==='chapters')return chapters();if(r[0]==='chapter'&&r[2]==='lesson')return lessonPage(r[1],r[3]);if(r[0]==='chapter'&&r[2]==='review')return reviewPage(r[1]);if(r[0]==='chapter')return chapterPage(r[1]);if(r[0]==='progress')return progressPage();return notFound();}catch(error){root.innerHTML=`<section class="error"><h1>Не удалось загрузить курс</h1><p>${esc(error.message)}</p><button onclick="location.reload()">Повторить</button></section>`;}root.focus();}
+addEventListener('hashchange',render);render();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});

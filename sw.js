@@ -1,5 +1,5 @@
-const CACHE_NAME = 'balkar-v3';
-const APP_ASSETS = ['./', './index.html', './styles.css', './interactions.css', './course-data.js', './app.js', './manifest.webmanifest', './icon.svg'];
+const CACHE_NAME = 'balkar-chapters-v7';
+const APP_ASSETS = ['./', './index.html', './course.css', './review.css', './explanations.css', './lesson-game.css', './lesson-rules.css', './duolingo.css', './chapter-data.js', './lesson-rules.js', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_ASSETS)));
