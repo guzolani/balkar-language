@@ -13,6 +13,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="interactions.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -83,6 +84,7 @@
           <span class="status-tag">КАРТОЧКА УРОКА</span>
           <p class="prompt">Как сказать по-балкарски?</p>
           <h2 id="cardRussian">Здравствуйте!</h2>
+          <div class="typing-practice" id="typingPractice"><input id="typedAnswer" autocomplete="off" placeholder="Напишите ответ…"><button id="checkTyped">Проверить</button><p class="typed-feedback hidden" id="typedFeedback"></p></div>
           <div class="answer hidden" id="cardAnswer"><span>ПО-БАЛКАРСКИ</span><strong id="cardBalkar">Салам алейкум!</strong><p id="cardNote">Приветствие мужчины по отношению к мужчине</p></div>
           <button class="primary-button wide" id="revealButton">Показать ответ</button>
           <div class="rating hidden" id="ratingButtons">
