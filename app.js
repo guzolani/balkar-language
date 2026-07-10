@@ -69,9 +69,8 @@ function renderDictionary() {
   const query = document.getElementById('dictionarySearch').value.trim().toLowerCase();
   const results = vocabulary.filter(item => (activeFilter === 'all' || item.category === activeFilter) && `${item.balkar} ${item.russian}`.toLowerCase().includes(query));
   document.getElementById('dictionaryList').innerHTML = results.length ? results.map(item => `
-    <article class="dictionary-item"><div><h3>${item.balkar}</h3><p>${item.russian}</p><small>Из источника · ожидает проверки</small></div><button class="sound-button" data-speak="${item.balkar}" aria-label="Прослушать">◖))</button></article>
+    <article class="dictionary-item"><div><h3>${item.balkar}</h3><p>${item.russian}</p><small>Из источника · ожидает проверки</small></div></article>
   `).join('') : '<div class="empty">Ничего не найдено</div>';
-  document.querySelectorAll('[data-speak]').forEach(b => b.addEventListener('click', () => speak(b.dataset.speak)));
 }
 
 document.getElementById('dictionarySearch').addEventListener('input', renderDictionary);
@@ -81,17 +80,6 @@ document.querySelectorAll('[data-filter]').forEach(button => button.addEventList
   renderDictionary();
 }));
 
-function speak(text) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'ru-RU';
-  utterance.rate = .75;
-  speechSynthesis.speak(utterance);
-}
-
-document.getElementById('cardAudio').addEventListener('click', () => speak(vocabulary[cardIndex].balkar));
-document.querySelectorAll('[data-audio]').forEach(b => b.addEventListener('click', () => speak(b.dataset.audio)));
 document.getElementById('themeButton').addEventListener('click', () => document.body.classList.toggle('dark'));
 
 document.getElementById('exportProgress').addEventListener('click', () => {
