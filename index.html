@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#173f35" />
+  <meta name="description" content="Изучение балкарского варианта карачаево-балкарского языка" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Балкарский" />
+  <title>Балкарский — учим язык каждый день</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="На главную">
+        <span class="brand-mark">Б</span>
+        <span><strong>Балкарский</strong><small>Тау тилни юйренейик</small></span>
+      </a>
+      <button class="icon-button" id="themeButton" aria-label="Сменить тему">☼</button>
+    </header>
+
+    <main>
+      <section class="view active" id="homeView">
+        <div class="hero-card">
+          <div>
+            <span class="eyebrow">БЮГЮНГЮ ДЕРС · УРОК 1</span>
+            <h1>Первый разговор<br />начинается с салама</h1>
+            <p>Освойте приветствия и проведите свой первый короткий диалог.</p>
+            <button class="primary-button" data-go="lesson">Начать урок <span>→</span></button>
+          </div>
+          <div class="mountain-art" aria-hidden="true">
+            <div class="sun"></div>
+            <svg viewBox="0 0 500 260" role="img">
+              <path class="mountain-back" d="M0 210 100 110l47 45 88-112 74 95 46-52 145 124v50H0Z"/>
+              <path class="mountain-front" d="M0 235 105 145l60 54 67-87 47 60 43-42 178 105v25H0Z"/>
+              <path class="snow" d="m100 110 47 45 88-112 74 95 46-52 39 33-39-15-41 58-78-98-38 57-35-22-16 56Z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <div><span class="eyebrow">ВАШ ПУТЬ</span><h2>Продолжайте обучение</h2></div>
+          <span class="level-pill">Уровень A0</span>
+        </div>
+        <div class="course-grid">
+          <article class="course-card current">
+            <div class="course-icon">✦</div>
+            <div class="course-copy"><small>УРОК 1 · 8 МИН</small><h3>Приветствие и знакомство</h3><p>7 слов · 3 упражнения</p></div>
+            <button class="round-button" data-go="lesson" aria-label="Открыть урок">→</button>
+          </article>
+          <article class="course-card locked">
+            <div class="course-icon">⌂</div>
+            <div class="course-copy"><small>УРОК 2</small><h3>Семья и дом</h3><p>Откроется после первого урока</p></div>
+            <span class="lock">⌁</span>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel progress-panel">
+            <div class="panel-title"><div><span class="eyebrow">НЕДЕЛЯ</span><h3>Ваш ритм</h3></div><strong id="streakCount">1 день</strong></div>
+            <div class="week" id="weekProgress"></div>
+          </article>
+          <article class="panel word-panel">
+            <span class="eyebrow">СЛОВО ДНЯ</span>
+            <div class="word-line"><div><h3>сау бол</h3><p>спасибо · будь здоров</p></div><button class="sound-button" data-audio="сау бол" aria-label="Прослушать">◖))</button></div>
+            <div class="source-note">Источник: разговорник, 1990 · <span>ожидает проверки</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="lessonView">
+        <button class="back-link" data-go="home">← На главную</button>
+        <div class="lesson-header">
+          <div><span class="eyebrow">УРОК 1 · ОСНОВЫ</span><h1>Приветствие и знакомство</h1><p>Поздоровайтесь, спросите о делах и попрощайтесь.</p></div>
+          <div class="lesson-progress"><span id="lessonStepLabel">1 из 7</span><div><i id="lessonProgressBar"></i></div></div>
+        </div>
+        <article class="flashcard" id="lessonCard">
+          <span class="status-tag">ИЗ ИСТОЧНИКА · НЕ ПРОВЕРЕНО НОСИТЕЛЕМ</span>
+          <button class="sound-button large" id="cardAudio" aria-label="Прослушать">◖))</button>
+          <p class="prompt">Как сказать по-балкарски?</p>
+          <h2 id="cardRussian">Здравствуйте!</h2>
+          <div class="answer hidden" id="cardAnswer"><span>ПО-БАЛКАРСКИ</span><strong id="cardBalkar">Салам алейкум!</strong><p id="cardNote">Приветствие мужчины по отношению к мужчине</p></div>
+          <button class="primary-button wide" id="revealButton">Показать ответ</button>
+          <div class="rating hidden" id="ratingButtons">
+            <button data-rating="again">Повторить</button><button data-rating="hard">Трудно</button><button data-rating="easy">Знаю</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="dictionaryView">
+        <div class="page-header"><span class="eyebrow">СЛОВАРЬ</span><h1>Слова и выражения</h1><p>Все записи снабжены источником и статусом проверки.</p></div>
+        <label class="search-box"><span>⌕</span><input id="dictionarySearch" type="search" placeholder="Искать на русском или балкарском…" /></label>
+        <div class="filter-row"><button class="chip active" data-filter="all">Все</button><button class="chip" data-filter="greeting">Приветствия</button><button class="chip" data-filter="farewell">Прощание</button></div>
+        <div class="dictionary-list" id="dictionaryList"></div>
+      </section>
+
+      <section class="view" id="progressView">
+        <div class="page-header"><span class="eyebrow">ПРОГРЕСС</span><h1>Ваше обучение</h1><p>Результаты сохраняются только на этом устройстве.</p></div>
+        <div class="stats-grid">
+          <article class="stat-card"><strong id="learnedStat">0</strong><span>слов изучено</span></article>
+          <article class="stat-card"><strong id="reviewStat">0</strong><span>ответов дано</span></article>
+          <article class="stat-card"><strong id="accuracyStat">—</strong><span>точность</span></article>
+        </div>
+        <article class="panel roadmap"><h2>Путь начинающего</h2><div class="roadmap-line"><i id="roadmapFill"></i></div><p id="roadmapText">Начните первый урок, чтобы увидеть прогресс.</p></article>
+        <article class="panel backup-panel">
+          <div><span class="eyebrow">СОХРАНЕНИЕ</span><h2>Ваш прогресс в безопасности</h2><p>Результаты автоматически сохраняются на этом устройстве. Можно скачать резервную копию и восстановить её позже.</p></div>
+          <div class="backup-actions"><button class="secondary-button" id="exportProgress">Скачать копию</button><label class="secondary-button file-button">Восстановить<input type="file" id="importProgress" accept="application/json" /></label></div>
+          <small id="backupStatus">Автосохранение включено</small>
+        </article>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button class="active" data-go="home"><span>⌂</span>Главная</button>
+      <button data-go="dictionary"><span>⌕</span>Словарь</button>
+      <button data-go="lesson"><span>◇</span>Карточки</button>
+      <button data-go="progress"><span>◔</span>Прогресс</button>
+    </nav>
+  </div>
+  <aside class="install-banner hidden" id="installBanner">
+    <button class="install-close" id="installClose" aria-label="Закрыть">×</button>
+    <div class="install-icon">Б</div>
+    <div><strong>Установить на iPhone</strong><p id="installHint">Откройте меню «Поделиться» в Safari и выберите «На экран Домой».</p></div>
+    <button class="install-button hidden" id="installButton">Установить</button>
+  </aside>
+  <script src="app.js"></script>
+</body>
+</html>
