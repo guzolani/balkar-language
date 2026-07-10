@@ -1,4 +1,4 @@
-const vocabulary = [
+const vocabulary = window.COURSE_WORDS || [
   { balkar: 'Салам алейкум!', russian: 'Здравствуйте!', note: 'Приветствие мужчины по отношению к мужчине', category: 'greeting' },
   { balkar: 'Кюн ашхы болсун!', russian: 'Добрый день!', note: 'Также используется как приветствие', category: 'greeting' },
   { balkar: 'Эртден ашхы болсун!', russian: 'Доброе утро!', note: '', category: 'greeting' },
@@ -11,6 +11,7 @@ const vocabulary = [
 const state = JSON.parse(localStorage.getItem('balkar-progress') || '{"answers":0,"easy":0,"learned":[]}');
 let cardIndex = 0;
 let activeFilter = 'all';
+let activeModule = 0;
 
 function saveState() { localStorage.setItem('balkar-progress', JSON.stringify(state)); updateStats(); }
 
@@ -26,6 +27,7 @@ function navigate(target) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (target === 'dictionary') renderDictionary();
   if (target === 'progress') updateStats();
+  if (target === 'grammar') renderGrammar();
 }
 
 document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
@@ -67,10 +69,19 @@ document.querySelectorAll('[data-rating]').forEach(button => button.addEventList
 
 function renderDictionary() {
   const query = document.getElementById('dictionarySearch').value.trim().toLowerCase();
-  const results = vocabulary.filter(item => (activeFilter === 'all' || item.category === activeFilter) && `${item.balkar} ${item.russian}`.toLowerCase().includes(query));
+  const results = vocabulary.filter(item => (activeFilter === 'all' || item.category === activeFilter || item.topic === activeFilter) && `${item.balkar} ${item.russian}`.toLowerCase().includes(query));
   document.getElementById('dictionaryList').innerHTML = results.length ? results.map(item => `
-    <article class="dictionary-item"><div><h3>${item.balkar}</h3><p>${item.russian}</p><small>Из источника · ожидает проверки</small></div></article>
+    <article class="dictionary-item"><div><h3>${item.balkar}</h3><p>${item.russian}</p><small>${item.topic || (item.category === 'greeting' ? 'Приветствия' : 'Прощание')}</small></div></article>
   `).join('') : '<div class="empty">Ничего не найдено</div>';
+}
+
+function renderGrammar() {
+  const modules = window.GRAMMAR_MODULES || [];
+  document.getElementById('moduleTabs').innerHTML = modules.map((module, i) => `<button class="module-tab ${i === activeModule ? 'active' : ''}" data-module="${i}"><span>${i + 1}</span>${module.title}</button>`).join('');
+  document.querySelectorAll('[data-module]').forEach(button => button.addEventListener('click', () => { activeModule = Number(button.dataset.module); renderGrammar(); }));
+  const m = modules[activeModule]; if (!m) return;
+  document.getElementById('grammarLesson').innerHTML = `<div class="grammar-head"><span>МОДУЛЬ ${activeModule + 1}</span><h2>${m.title}</h2><p>${m.subtitle}</p></div><section class="rule-box"><strong>Правило</strong><p>${m.rule}</p></section><section><h3>Примеры</h3><div class="example-list">${m.examples.map(e => `<div><b>${e[0]}</b><span>${e[1]}</span></div>`).join('')}</div></section><section class="builder"><h3>Соберите предложение</h3><div class="word-parts">${m.build.map(w => `<button>${w}</button>`).join('')}</div><button class="primary-button" id="checkBuild">Проверить</button><p class="feedback hidden" id="buildFeedback">Правильно: <b>${m.answer}</b><br>Глагол или именная связка обычно завершает предложение.</p></section><section><h3>Короткий диалог</h3><div class="dialogue">${m.dialogue.map((d,i)=>`<div class="${i%2?'reply':''}"><b>${d[0]}</b><span>${d[1]}</span></div>`).join('')}</div></section>`;
+  document.getElementById('checkBuild').addEventListener('click', () => document.getElementById('buildFeedback').classList.remove('hidden'));
 }
 
 document.getElementById('dictionarySearch').addEventListener('input', renderDictionary);
@@ -147,4 +158,4 @@ function updateStats() {
   document.getElementById('roadmapText').textContent = state.learned.length ? `Вы уверенно знаете ${state.learned.length} из ${vocabulary.length} слов первого урока.` : 'Начните первый урок, чтобы увидеть прогресс.';
 }
 
-renderWeek(); renderCard(); renderDictionary(); updateStats();
+renderWeek(); renderCard(); renderDictionary(); renderGrammar(); updateStats();
