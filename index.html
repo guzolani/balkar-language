@@ -53,10 +53,10 @@
             <div class="course-copy"><small>УРОК 1 · 8 МИН</small><h3>Приветствие и знакомство</h3><p>7 слов · 3 упражнения</p></div>
             <button class="round-button" data-go="lesson" aria-label="Открыть урок">→</button>
           </article>
-          <article class="course-card locked">
+          <article class="course-card" data-go="grammar">
             <div class="course-icon">⌂</div>
-            <div class="course-copy"><small>УРОК 2</small><h3>Семья и дом</h3><p>Откроется после первого урока</p></div>
-            <span class="lock">⌁</span>
+            <div class="course-copy"><small>8 МОДУЛЕЙ</small><h3>Грамматика и предложения</h3><p>Правила · примеры · практика</p></div>
+            <button class="round-button" data-go="grammar" aria-label="Открыть грамматику">→</button>
           </article>
         </div>
 
@@ -68,7 +68,7 @@
           <article class="panel word-panel">
             <span class="eyebrow">СЛОВО ДНЯ</span>
             <div class="word-line"><div><h3>сау бол</h3><p>спасибо · будь здоров</p></div></div>
-            <div class="source-note">Источник: разговорник, 1990 · <span>ожидает проверки</span></div>
+            <div class="source-note">Тема: приветствия и вежливые выражения</div>
           </article>
         </div>
       </section>
@@ -80,7 +80,7 @@
           <div class="lesson-progress"><span id="lessonStepLabel">1 из 7</span><div><i id="lessonProgressBar"></i></div></div>
         </div>
         <article class="flashcard" id="lessonCard">
-          <span class="status-tag">ИЗ ИСТОЧНИКА · НЕ ПРОВЕРЕНО НОСИТЕЛЕМ</span>
+          <span class="status-tag">КАРТОЧКА УРОКА</span>
           <p class="prompt">Как сказать по-балкарски?</p>
           <h2 id="cardRussian">Здравствуйте!</h2>
           <div class="answer hidden" id="cardAnswer"><span>ПО-БАЛКАРСКИ</span><strong id="cardBalkar">Салам алейкум!</strong><p id="cardNote">Приветствие мужчины по отношению к мужчине</p></div>
@@ -94,7 +94,7 @@
       <section class="view" id="dictionaryView">
         <div class="page-header"><span class="eyebrow">СЛОВАРЬ</span><h1>Слова и выражения</h1><p>Все записи снабжены источником и статусом проверки.</p></div>
         <label class="search-box"><span>⌕</span><input id="dictionarySearch" type="search" placeholder="Искать на русском или балкарском…" /></label>
-        <div class="filter-row"><button class="chip active" data-filter="all">Все</button><button class="chip" data-filter="greeting">Приветствия</button><button class="chip" data-filter="farewell">Прощание</button></div>
+        <div class="filter-row"><button class="chip active" data-filter="all">Все</button><button class="chip" data-filter="Приветствия">Приветствия</button><button class="chip" data-filter="Люди и семья">Семья</button><button class="chip" data-filter="Дом">Дом</button><button class="chip" data-filter="Действия">Действия</button></div>
         <div class="dictionary-list" id="dictionaryList"></div>
       </section>
 
@@ -112,6 +112,11 @@
           <small id="backupStatus">Автосохранение включено</small>
         </article>
       </section>
+      <section class="view" id="grammarView">
+        <div class="page-header"><span class="eyebrow">ГРАММАТИЧЕСКАЯ ТРАЕКТОРИЯ</span><h1>От слова к предложению</h1><p>Восемь последовательных модулей с правилами, практикой и диалогами.</p></div>
+        <div class="module-tabs" id="moduleTabs"></div>
+        <article class="grammar-lesson" id="grammarLesson"></article>
+      </section>
     </main>
 
     <nav class="bottom-nav" aria-label="Основная навигация">
@@ -119,6 +124,7 @@
       <button data-go="dictionary"><span>⌕</span>Словарь</button>
       <button data-go="lesson"><span>◇</span>Карточки</button>
       <button data-go="progress"><span>◔</span>Прогресс</button>
+      <button data-go="grammar"><span>≡</span>Грамматика</button>
     </nav>
   </div>
   <aside class="install-banner hidden" id="installBanner">
@@ -127,6 +133,7 @@
     <div><strong>Установить на iPhone</strong><p id="installHint">Откройте меню «Поделиться» в Safari и выберите «На экран Домой».</p></div>
     <button class="install-button hidden" id="installButton">Установить</button>
   </aside>
+  <script src="course-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
